@@ -2,7 +2,7 @@
   "name": "user-login-express-server",
   "version": "1.0.0",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=12.0.0"
   },
   "description": "",
   "main": "index.js",
