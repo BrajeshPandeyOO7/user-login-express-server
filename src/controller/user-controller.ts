@@ -1,26 +1,53 @@
 import express, { NextFunction, Request, Response } from 'express'
 import UserModel from '../model/user-model';
-import { ObjectId } from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
+import { IUser, IUserDocument } from '../interfaces/Iuser';
 
 const getusers = (route:any) => {
     route.get('/:id?', async (req:Request, res:Response) => {
-        const { id } = req.params;
-        const body = req.body;
-        const user = await UserModel.getusers(id);
-        return res.send(user)
+        try {
+            const { id } = req.params;
+            const body = req.body;
+            const user = await UserModel.getusers(id);
+            res.send(user);
+        } catch (error) {
+            res.send({
+                message: (error as Error).message
+            })
+        }
     });
 }
 
 const updateUser = (route:any) => {
     route.put('/', async (req:Request, res:Response) => {
-        const body = req.body;
-        res.send({body, message: 'update complete'})
+        try {
+            const body = req.body;
+            if(!body) throw Error("Body can't evaluate!");
+            const user = new UserModel(body);
+            if(!user.validateSync()){
+                const response = await UserModel.updateUser(user)
+                res.send(response);
+            };
+        } catch (error) {
+            res.send({
+                message: (error as Error).message
+            })
+        }   
     });
 }
 
 const deleteUser = (route:any) => {
-    route.delete('/', async (req:Request, res:Response) => {
-        res.send({message: 'delete complete'})
+    route.delete('/:id?', async (req:Request, res:Response) => {
+        try {
+            const {id} = req.params;
+            if(!id) throw new Error('Bad request');
+            const response = await UserModel.deleteUser(new mongoose.Types.ObjectId(id.toString()))
+            res.send(response)
+        } catch (error) {
+            res.send({
+                message: (error as Error).message
+            })
+        }
     });
 }
 

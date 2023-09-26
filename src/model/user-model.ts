@@ -59,12 +59,18 @@ UserSchema.statics.getusers = async function (_id?: string) {
         return users;
     }
 }
-UserSchema.statics.updateUser = async function (user: IUser) {
-    
+UserSchema.statics.updateUser = async function (user: IUserDocument) {
+    const { _id , ...rest} = user;
+    return await this.findOneAndUpdate({_id: _id}, {$set: rest},{new: true}).exec(); 
 }
 
-UserSchema.statics.deleteUser = async function (id?: ObjectId) {
-    
+UserSchema.statics.deleteUser = async function (id?: any) {
+    const {acknowledged, deletedCount} =  await this.deleteOne({_id:id}).exec();
+    if(!deletedCount) throw Error('Not Found');
+    return {
+        acknowledged,
+        deletedCount
+    }
 }
 
 const UserModel: IUserModel = model<IUserDocument, IUserModel>('users',UserSchema);
