@@ -17,7 +17,7 @@ export interface IUserModel extends Model<IUserDocument> {
     login(user: IUser): Promise<IUserDocument>
     register(user: Record<string, string | number | boolean>): Promise<IUserDocument | unknown>
     getusers(id?: string): Promise<IUserDocument>
-    updateUser(user: IUserDocument): Promise<IUserDocument>
+    updateUser(id: string, user: IUserDocument): Promise<IUserDocument>
     deleteUser(id: mongoose.Types.ObjectId): Promise<boolean>
 }
 

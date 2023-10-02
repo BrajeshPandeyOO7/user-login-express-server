@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import UserModel from '../model/user-model';
-import mongoose, { ObjectId } from "mongoose";
-import { IUser, IUserDocument } from '../interfaces/Iuser';
+import mongoose from "mongoose";
+import { sendError, sendResponse } from '../helper';
 
 const getusers = (route:any) => {
     route.get('/:id?', async (req:Request, res:Response) => {
@@ -9,29 +9,33 @@ const getusers = (route:any) => {
             const { id } = req.params;
             const body = req.body;
             const user = await UserModel.getusers(id);
-            res.send(user);
+            res.send(
+                sendResponse(user)
+            );
         } catch (error) {
-            res.send({
-                message: (error as Error).message
-            })
+            res.send(
+                sendError((error as Error).message)
+            )
         }
     });
 }
 
 const updateUser = (route:any) => {
-    route.put('/', async (req:Request, res:Response) => {
+    route.put('/:id', async (req:Request, res:Response) => {
         try {
             const body = req.body;
+            const { id } = req.params;
             if(!body) throw Error("Body can't evaluate!");
-            const user = new UserModel(body);
-            if(!user.validateSync()){
-                const response = await UserModel.updateUser(user)
-                res.send(response);
+            if(body){
+                const response = await UserModel.updateUser(id,body)
+                res.send(
+                    sendResponse(response)
+                );
             };
         } catch (error) {
-            res.send({
-                message: (error as Error).message
-            })
+            res.send(
+                sendError((error as Error).message)
+            )
         }   
     });
 }
@@ -42,11 +46,13 @@ const deleteUser = (route:any) => {
             const {id} = req.params;
             if(!id) throw new Error('Bad request');
             const response = await UserModel.deleteUser(new mongoose.Types.ObjectId(id.toString()))
-            res.send(response)
+            res.send(
+                sendResponse(response)
+            );
         } catch (error) {
-            res.send({
-                message: (error as Error).message
-            })
+            res.send(
+                sendError((error as Error).message)
+            )
         }
     });
 }

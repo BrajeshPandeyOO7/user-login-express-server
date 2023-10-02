@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import UserController from "../controller/user-controller";
 import AuthController from "../controller/auth-controller";
+import { verifyToken } from "../auth";
 
 export default function globalRoutconfig(app:any) {
     interceptor(app);
@@ -12,13 +13,13 @@ export default function globalRoutconfig(app:any) {
 
 function protectRoute(app:any) {
     app.use((req:Request, res:Response, next:NextFunction) => {
-        const token: any = req.headers['access-token'];
-        if(token){
+        const bearer = req.headers['authorization'];
+        const token = bearer && bearer?.split(' ')[1];
+        if(!token)return res.sendStatus(401);
+        verifyToken(token,(err:any, decode:any) => {
+            if(err)return res.sendStatus(403);
             next();
-        }else{
-            res.send({message: 'token missing!'});
-            return;
-        }
+        });
     });
 }
 

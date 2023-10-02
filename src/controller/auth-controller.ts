@@ -1,11 +1,22 @@
 import express, { NextFunction, Request, Response } from 'express'
 import UserModel from '../model/user-model';
+import { sendError, sendResponse } from '../helper';
 
 
 const login = (route:any) => {
     route.post('/login', async (req:Request, res:Response) => {
         const body = req.body;
-        res.send({body, message: 'create complete'})
+        try {
+            const body = req.body;
+            const _response = await UserModel.login(body);
+            return res.send(
+                sendResponse(_response)
+            )
+        } catch (error) {
+            res.send(
+                sendError((error as Error).message)
+            );
+        }
     });
 }
 
@@ -14,12 +25,14 @@ const register = (route:any) => {
         try {
             const body = req.body;
             const user = await UserModel.register(body);
-            return res.send(user)
+            return res.send(
+                sendResponse(user)
+            )
             
         } catch (error) {
-            res.send({
-                error: 'server error'
-            });
+            res.send(
+                sendError((error as Error).message)
+            );
         }
     });
 }

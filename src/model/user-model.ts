@@ -1,5 +1,6 @@
 import mongoose, { ObjectId, Schema, model } from "mongoose";
 import { IUser, IUserDocument, IUserModel } from "../interfaces/Iuser";
+import { generateJwtToken, hashPassword, validatePassword } from "../auth";
 
 const UserSchema = new Schema({
     name: {
@@ -29,17 +30,28 @@ const UserSchema = new Schema({
 });
 
 UserSchema.statics.login = async function (user: IUser) {
-
+    const { email, password } = user;
+    const res_user = await this.findOne({email}, {password:0}).lean().exec();
+    const isPassowrdValid = await validatePassword(password,res_user)
+    if(!isPassowrdValid)
+        return "something wrong!";
+    const auth_token =  await generateJwtToken(res_user);
+    return {
+       ...res_user,
+        auth_token
+    }
 }
+
 UserSchema.statics.register = async function (body: IUser) {
-    const { email } = body;
+    const { email, password } = body;
+    const hash_password = await hashPassword(password);
     const res = await this.findOne({email}).lean().exec();
-    if(res){
+    if(res || !hash_password){
         return {
             error: 'something wrong'
         }
     }
-    const _user = new UserModel(body);
+    const _user = new UserModel({...body, password: hash_password});
     const is_user_valid = _user.validateSync();
     if(!is_user_valid){
         return await _user.save();           
@@ -51,17 +63,17 @@ UserSchema.statics.register = async function (body: IUser) {
 }
 UserSchema.statics.getusers = async function (_id?: string) {
     if(_id){
-        const user = await this.findOne({_id: new mongoose.Types.ObjectId(_id)}).lean().exec();
+        const user = await this.findOne({_id: new mongoose.Types.ObjectId(_id)}, {password: 0}).lean().exec();
         return user;
 
     }else {
-        const users = await this.find();
+        const users = await this.find({},{password:0});
         return users;
     }
 }
-UserSchema.statics.updateUser = async function (user: IUserDocument) {
-    const { _id , ...rest} = user;
-    return await this.findOneAndUpdate({_id: _id}, {$set: rest},{new: true}).exec(); 
+UserSchema.statics.updateUser = async function (_id: string, user: IUserDocument) {
+    const { _id:id , ...rest} = user;
+    return await this.findOneAndUpdate({_id}, {$set: rest},{new: true, projection:{password: 0}}).exec(); 
 }
 
 UserSchema.statics.deleteUser = async function (id?: any) {
