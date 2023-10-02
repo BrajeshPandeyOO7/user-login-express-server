@@ -31,13 +31,14 @@ const UserSchema = new Schema({
 
 UserSchema.statics.login = async function (user: IUser) {
     const { email, password } = user;
-    const res_user = await this.findOne({email}, {password:0}).lean().exec();
-    const isPassowrdValid = await validatePassword(password,res_user)
+    const res_user = await this.findOne({email}).lean().exec();
+    const isPassowrdValid = await validatePassword(password,res_user);
     if(!isPassowrdValid)
         return "something wrong!";
     const auth_token =  await generateJwtToken(res_user);
+    const { password:pass , ...res} = res_user
     return {
-       ...res_user,
+       ...res,
         auth_token
     }
 }
