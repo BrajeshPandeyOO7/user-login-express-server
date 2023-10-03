@@ -21,7 +21,7 @@ const getusers = (route:any) => {
 }
 
 const updateUser = (route:any) => {
-    route.put('/:id', async (req:Request, res:Response) => {
+    route.put('/:id', async (req:any, res:Response) => {
         try {
             const body = req.body;
             const { id } = req.params;

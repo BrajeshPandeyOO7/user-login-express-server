@@ -9,7 +9,7 @@ export interface IUser {
     active: boolean
 }
 
-export interface IUserDocument extends Document{
+export interface IUserDocument extends IUser, Document{
     _id: ObjectId
 }
 

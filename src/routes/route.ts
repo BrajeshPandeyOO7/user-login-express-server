@@ -12,12 +12,20 @@ export default function globalRoutconfig(app:any) {
 }
 
 function protectRoute(app:any) {
-    app.use((req:Request, res:Response, next:NextFunction) => {
+    app.use((req:any, res:Response, next:NextFunction) => {
         const bearer = req.headers['authorization'];
         const token = bearer && bearer?.split(' ')[1];
         if(!token)return res.sendStatus(401);
         verifyToken(token,(err:any, decode:any) => {
             if(err)return res.sendStatus(403);
+            req['user'] = decode;
+            const { method } = req;
+            const { id } = req.params;
+            if(
+                method === 'PUT' || 
+                method === 'DELETE' && 
+                id !== decode._id
+            )return res.sendStatus(400);
             next();
         });
     });

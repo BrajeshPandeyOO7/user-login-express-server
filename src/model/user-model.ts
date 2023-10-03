@@ -73,7 +73,7 @@ UserSchema.statics.getusers = async function (_id?: string) {
     }
 }
 UserSchema.statics.updateUser = async function (_id: string, user: IUserDocument) {
-    const { _id:id , ...rest} = user;
+    const { _id:id, password, ...rest} = user;
     return await this.findOneAndUpdate({_id}, {$set: rest},{new: true, projection:{password: 0}}).exec(); 
 }
 
